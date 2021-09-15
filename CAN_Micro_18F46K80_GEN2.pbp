@@ -31,7 +31,7 @@ DEFINE OSC 64       'Use the internal Xtal
 
 version con 1
 firmware con 5
-built con 5
+built con 6
 
 include "PIC18CAN.bas"
 
@@ -1981,6 +1981,8 @@ return
 
 Check_SensorLink:
   read 8,SensorLink
+  read 9,SensorLink2
+  hserout2 ["SensorLink ",dec SensorLink," ",dec Sensorlink2," SensorOk ",dec SensorOk1," ",dec SensorOk2," ",dec SensorOk3," NrofSensors ",dec NrOfSensors,13,10]
   if SensorLink>31 and (SensorOk1=1 or SensorOk2=1) then   'Sensor not yet initialized
     if NrOfSensors<32 then
       SensorLink=NrOfSensors
@@ -1989,15 +1991,15 @@ Check_SensorLink:
       gosub Write_eeprom_and_verify
       'write 8,NrOfSensors
       NrOfSensors=NrOfSensors+1  
-      gosub Sent_NrOfSensors
+      'gosub Sent_NrOfSensors
+      gosub SentSensorValues
       hserout2 ["First sensor added ",dec NrOfSensors,13,10]
     else
       'Request Nr of Sensors
       gosub Request_NrOfSensors
       'hserout2 ["Request Nr of Sensors ",13,10]              
     endif    
-  endif
-  read 9,SensorLink2  
+  endif  
   if SensorLink2>31 and SensorOk3=1 then   'Sensor not yet initialized
     if NrOfSensors<32 then
       SensorLink2=NrOfSensors
@@ -2006,11 +2008,12 @@ Check_SensorLink:
       gosub Write_eeprom_and_verify      
       'write 9,NrOfSensors 
       NrOfSensors=NrOfSensors+1    
-      gosub Sent_NrOfSensors
+      'gosub Sent_NrOfSensors
+      gosub SentSensorValues
       hserout2 ["Second sensor added ",dec NrOfSensors,13,10]
-    else
+    'else
       'Request Nr of Sensors
-      gosub Request_NrOfSensors
+      'gosub Request_NrOfSensors
       'hserout2 ["Request Nr of Sensors ",13,10]              
     endif    
   endif  
