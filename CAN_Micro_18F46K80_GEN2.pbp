@@ -27,11 +27,12 @@
 @ CONFIG SOSCSEL=DIG
 @ CONFIG CANMX=PORTC
 
+
 DEFINE OSC 64       'Use the internal Xtal
 
 version con 1
 firmware con 5
-built con 6
+built con 7
 
 include "PIC18CAN.bas"
 
@@ -279,6 +280,7 @@ pcf8574 var bit
 eep_addr var word
 eep_addr_temp var word
 Err var bit
+DummyByte var byte 
 Err=0
 
 
@@ -578,6 +580,7 @@ for t=0 to 7
 next t
 read 8,SensorLink
 read 9,SensorLink2
+read 200,DummyByte      'set pointer to place 200, if brown out or others happens, the current addresses won't be affected
 Hserout2 ["Sensorlink=",dec SensorLink,13,10]
 Hserout2 ["Sensorlink2=",dec SensorLink2,13,10]
 'hier sensor
@@ -1615,7 +1618,8 @@ Check_message:     't is already used
         SensorSentCounter=12000+(SensorLink*10)+(SensorLink2*10)
         hserout2 ["Temp request ",dec QueueRxdByte2[t]," = ",dec SensorLink," Temp= ",dec Temperature," ",dec Temperature2,13,10]
       endif
-      read 9,SensorLink2 
+      read 9,SensorLink2
+      read 200,DummyByte      'set pointer to place 200, if brown out or others happens, the current addresses won't be affected 
       if QueueRxdByte2[t]=SensorLink2 then  'Sensor information request sensor 2    
         QueueTxdByte0[QueueTxdPointer]=2
         QueueTxdByte1[QueueTxdPointer]=2
@@ -1982,6 +1986,7 @@ return
 Check_SensorLink:
   read 8,SensorLink
   read 9,SensorLink2
+  read 200,DummyByte      'set pointer to place 200, if brown out or others happens, the current addresses won't be affected
   hserout2 ["SensorLink ",dec SensorLink," ",dec Sensorlink2," SensorOk ",dec SensorOk1," ",dec SensorOk2," ",dec SensorOk3," NrofSensors ",dec NrOfSensors,13,10]
   if SensorLink>31 and (SensorOk1=1 or SensorOk2=1) then   'Sensor not yet initialized
     if NrOfSensors<32 then
@@ -2031,12 +2036,14 @@ Write_eeprom_and_verify:
             hserout2 ["Eeprom write FAILED pos ",dec EepromPosition," Value ",dec EepromValue,13,10]
         endif
     next EepromCounter
+    read 200,DummyByte      'set pointer to place 200, if brown out or others happens, the current addresses won't be affected
 return
 
 Check_InputLink:
   if NrOfInputs<240 then
     if SwitchNr<8 then
       read SwitchNr,SwitchLink[SwitchNr]
+      read 200,DummyByte      'set pointer to place 200, if brown out or others happens, the current addresses won't be affected
       if SwitchLink[SwitchNr]>239 then  'Switch not yet initialized
         SwitchLink[SwitchNr]=NrOfInputs
         EepromPosition=SwitchNr
